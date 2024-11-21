@@ -1,0 +1,35 @@
+{
+    "name": "m-adamski/symfony-tabulator-bundle",
+    "description": "The Symfony Bundle, supporting the Tabulator JS library",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maciej Adamski",
+            "email": "m.adamski@ideacode.pl"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "symfony/framework-bundle": "^7.1",
+        "symfony/options-resolver": "^7.1",
+        "symfony/twig-bundle": "^7.1"
+    },
+    "require-dev": {
+        "symfony/test-pack": "^1.1",
+        "symfony/var-dumper": "^7.1"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Adamski\\Symfony\\TabulatorBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Adamski\\Symfony\\TabulatorBundleTests\\": "tests/"
+        }
+    }
+}

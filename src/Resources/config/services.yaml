@@ -1,0 +1,5 @@
+services:
+    Adamski\Symfony\TabulatorBundle\TabulatorFactory:
+        alias: tabulator_bundle.tabulator_factory
+        arguments:
+            - '@Symfony\Component\HttpFoundation\RequestStack'
