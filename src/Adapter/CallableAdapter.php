@@ -8,7 +8,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CallableAdapter extends AbstractAdapter {
     public function getData(AdapterQuery $adapterQuery): ResultInterface {
-        $functionResult = $this->getOptions()["function"]($adapterQuery);
+        $functionResult = $this->getOption("function")($adapterQuery);
 
         if (!$functionResult instanceof ResultInterface) {
             throw new \LogicException("The callable function must return an instance of ResultInterface");

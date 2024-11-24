@@ -4,6 +4,11 @@ namespace Adamski\Symfony\TabulatorBundle;
 
 use Adamski\Symfony\TabulatorBundle\Adapter\AbstractAdapter;
 use Adamski\Symfony\TabulatorBundle\Column\AbstractColumn;
+use Adamski\Symfony\TabulatorBundle\Column\HiddenColumn;
+use Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage;
+use Adamski\Symfony\TabulatorBundle\Parser\ParserInterface;
+use Adamski\Symfony\TabulatorBundle\Sorter\SortingDirection;
+use Adamski\Symfony\TabulatorBundle\Sorter\SortingItem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -14,8 +19,10 @@ class Tabulator {
     private ?AbstractAdapter $adapter = null;
 
     public function __construct(
-        private string   $selector,
-        private ?Request $request = null,
+        private string                   $selector,
+        private readonly Request         $request,
+        private readonly InstanceStorage $instanceStorage,
+        private readonly ParserInterface $parser,
     ) {}
 
     public function getSelector(): string {
@@ -31,6 +38,14 @@ class Tabulator {
         return $this->options;
     }
 
+    public function getOption(string $name): mixed {
+        if (!array_key_exists($name, $this->options)) {
+            throw new \InvalidArgumentException("Option '$name' does not exist");
+        }
+
+        return $this->options[$name];
+    }
+
     public function setOptions(array $options): static {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
@@ -40,15 +55,36 @@ class Tabulator {
     }
 
     public function getColumns(): array {
+//        $identifierColumns = array_filter($this->columns, function (AbstractColumn $column) {
+//            return "id" === $column->getOption("field");
+//        });
+//
+//        // Check if ID column is already set
+//        if (count($identifierColumns) <= 0) {
+//            $this->addColumn("id", HiddenColumn::class, [
+//                "field" => "id",
+//                "title" => "#",
+//            ]);
+//        }
+
         return $this->columns;
+    }
+
+    public function getColumn(string $name): AbstractColumn {
+        if (!array_key_exists($name, $this->columns)) {
+            throw new \InvalidArgumentException("Column '$name' does not exist");
+        }
+
+        return $this->columns[$name];
     }
 
     public function addColumn(string $name, string $columnClass, array $options = []): static {
         if (array_key_exists($name, $this->columns)) {
-            throw new \InvalidArgumentException("Table already contains a column with name '$name'.");
+            throw new \InvalidArgumentException("Table already contains a column with name '$name'");
         }
 
-        $this->columns[$name] = new $columnClass($options);
+        $this->columns[$name] = $this->instanceStorage->getColumn($columnClass)
+            ->setOptions(array_merge($options, ["field" => $name]));
 
         return $this;
     }
@@ -63,57 +99,76 @@ class Tabulator {
     }
 
     public function createAdapter(string $adapterClass, array $options = []): static {
-        $this->setAdapter(new $adapterClass, $options);
+        $this->setAdapter($this->instanceStorage->getAdapter($adapterClass), $options);
         return $this;
     }
 
-    public function getRequest(): ?Request {
-        return $this->request;
-    }
-
-    public function setRequest(?Request $request): static {
-        $this->request = $request;
-        return $this;
-    }
-
+    /**
+     * Generate configuration which will be provided to the JS library.
+     *
+     * @return array
+     */
     public function getConfig(): array {
         $tableOptions = $this->getOptions();
 
         if (!array_key_exists("ajaxURL", $tableOptions) || null === $tableOptions["ajaxURL"]) {
-            throw new \InvalidArgumentException("The ajaxURL option must be set.");
+            throw new \InvalidArgumentException("The ajaxURL option must be set");
         }
 
         return [
             "selector" => $this->getSelector(),
             "options"  => array_merge($tableOptions, [
                 "columns" => array_map(function (AbstractColumn $column) {
-                    return $column->getOptions();
+                    return $column->getConfig();
                 }, array_values($this->getColumns()))
             ]),
         ];
     }
 
+    /**
+     * Handle Request.
+     *
+     * @param Request $request
+     * @return JsonResponse|null
+     */
     public function handleRequest(Request $request): ?JsonResponse {
         if (
             "tabulator" === $request->query->get("generator") ||
             "tabulator" === $request->headers->get("X-Request-Generator")
         ) {
             if (null === $this->getAdapter()) {
-                throw new \InvalidArgumentException("Missing Adapter to handle request.");
+                throw new \InvalidArgumentException("Missing Adapter to handle request");
+            }
+
+            // Generate AdapterQuery
+            $adapterQuery = (new AdapterQuery())
+                ->setPagination($this->getOption("pagination"))
+                ->setPaginationSize($request->query->get("size") ?? $request->getPayload()->get("size"))
+                ->setPaginationPage($request->query->get("page") ?? $request->getPayload()->get("page"))
+                ->setPayload($request->getPayload());
+
+            // Process sorting
+            $requestSort = !empty($request->query->all("sort")) ? $request->query->all("sort") : $request->getPayload()->all("sort");
+
+            if (count($requestSort) > 0) {
+                foreach ($requestSort as $value) {
+                    $adapterQuery->getSortingBag()->addSortingItem(
+                        (new SortingItem())
+                            ->setColumn($this->getColumn($value["field"]))
+                            ->setDirection(SortingDirection::from($value["dir"]))
+                    );
+                }
             }
 
             // Call Adapter
-            $adapterResult = $this->getAdapter()->getData(
-                (new AdapterQuery())
-                    ->setPagination($this->getOptions(true)["pagination"])
-                    ->setPaginationSize($request->query->get("size") ?? $request->getPayload()->get("size"))
-                    ->setPaginationPage($request->query->get("page") ?? $request->getPayload()->get("page"))
-                    ->setPayload($request->getPayload())
-            );
+            $adapterResult = $this->getAdapter()->getData($adapterQuery);
+
+            // Parse data
+            $adapterData = $this->parser->parse($adapterResult->getData(), $this->getColumns());
 
             return new JsonResponse(
-                $this->getOptions()["pagination"] ? [
-                    "data"      => $adapterResult->getData(),
+                $this->getOption("pagination") ? [
+                    "data"      => $adapterData,
                     "last_row"  => $adapterResult->getTotalRecords(),
                     "last_page" => $adapterResult->getTotalPages()
                 ] : $adapterResult->getData()
@@ -123,6 +178,12 @@ class Tabulator {
         return null;
     }
 
+    /**
+     * Configure Options.
+     *
+     * @param OptionsResolver $resolver
+     * @return void
+     */
     private function configureOptions(OptionsResolver $resolver): void {
         $resolver->setDefaults([
             "ajaxURL"                => $this->request?->getRequestUri(),
@@ -135,7 +196,9 @@ class Tabulator {
             "paginationSize"         => 25,
             "paginationButtonCount"  => 3,
             "paginationSizeSelector" => [10, 25, 50],
-            "paginationCounter"      => "rows"
+            "paginationCounter"      => "rows",
+            "filterMode"             => "remote",
+            "sortMode"               => "remote"
         ]);
     }
 }

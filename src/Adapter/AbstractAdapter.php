@@ -13,6 +13,14 @@ abstract class AbstractAdapter {
         return $this->options;
     }
 
+    public function getOption(string $name): mixed {
+        if (!array_key_exists($name, $this->options)) {
+            throw new \InvalidArgumentException("Option '$name' does not exist");
+        }
+
+        return $this->options[$name];
+    }
+
     public function setOptions(array $options): static {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);

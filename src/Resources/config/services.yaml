@@ -1,4 +1,21 @@
 services:
+
+    # Adapters
+    Adamski\Symfony\TabulatorBundle\Adapter\ArrayAdapter:
+    Adamski\Symfony\TabulatorBundle\Adapter\CallableAdapter:
+    Adamski\Symfony\TabulatorBundle\Adapter\Doctrine\RepositoryAdapter:
+        arguments:
+            - '@doctrine'
+
+    # Columns
+    Adamski\Symfony\TabulatorBundle\Column\TwigColumn:
+        arguments:
+            - '@twig'
+
+    Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage:
+    Adamski\Symfony\TabulatorBundle\Parser\PropertyParser:
     Adamski\Symfony\TabulatorBundle\TabulatorFactory:
         arguments:
             - '@Symfony\Component\HttpFoundation\RequestStack'
+            - '@Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage'
+            - '@Adamski\Symfony\TabulatorBundle\Parser\PropertyParser'

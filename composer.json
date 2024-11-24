@@ -13,6 +13,7 @@
         "php": ">=8.2",
         "symfony/framework-bundle": "^7.1",
         "symfony/options-resolver": "^7.1",
+        "symfony/property-access": "^7.1",
         "symfony/twig-bundle": "^7.1"
     },
     "require-dev": {
