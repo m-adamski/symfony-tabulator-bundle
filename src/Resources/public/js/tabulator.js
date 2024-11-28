@@ -1,4 +1,4 @@
-const initTabulator = (tableConfig) => {
+const initTabulator = (Tabulator, tableConfig) => {
     return new Promise((resolve, reject) => {
         let table = new Tabulator(tableConfig.selector, tableConfig.options);
 
