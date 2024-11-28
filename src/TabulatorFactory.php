@@ -2,8 +2,6 @@
 
 namespace Adamski\Symfony\TabulatorBundle;
 
-use Adamski\Symfony\TabulatorBundle\Adapter\ArrayAdapter;
-use Adamski\Symfony\TabulatorBundle\Adapter\Doctrine\ORMAdapter;
 use Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage;
 use Adamski\Symfony\TabulatorBundle\Parser\ParserInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -15,7 +13,8 @@ class TabulatorFactory {
         private readonly ParserInterface $parser,
     ) {}
 
-    public function create(string $selector): Tabulator {
-        return new Tabulator($selector, $this->requestStack->getCurrentRequest(), $this->instanceStorage, $this->parser);
+    public function create(string $selector, array $options = []): Tabulator {
+        return (new Tabulator($selector, $this->requestStack->getCurrentRequest(), $this->instanceStorage, $this->parser))
+            ->setOptions($options);
     }
 }

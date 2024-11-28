@@ -2,6 +2,7 @@
 
 namespace Adamski\Symfony\TabulatorBundle;
 
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringBag;
 use Adamski\Symfony\TabulatorBundle\Sorter\SortingBag;
 use Symfony\Component\HttpFoundation\InputBag;
 
@@ -10,10 +11,12 @@ class AdapterQuery {
     private ?int $paginationPage = null;
     private ?int $paginationSize = null;
     private SortingBag $sortingBag;
+    private FilteringBag $filteringBag;
     private ?InputBag $payload = null;
 
     public function __construct() {
         $this->sortingBag = new SortingBag();
+        $this->filteringBag = new FilteringBag();
     }
 
     public function isPagination(): bool {
@@ -45,6 +48,10 @@ class AdapterQuery {
 
     public function getSortingBag(): SortingBag {
         return $this->sortingBag;
+    }
+
+    public function getFilteringBag(): FilteringBag {
+        return $this->filteringBag;
     }
 
     public function getPayload(): ?InputBag {

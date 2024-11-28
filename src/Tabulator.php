@@ -4,8 +4,10 @@ namespace Adamski\Symfony\TabulatorBundle;
 
 use Adamski\Symfony\TabulatorBundle\Adapter\AbstractAdapter;
 use Adamski\Symfony\TabulatorBundle\Column\AbstractColumn;
-use Adamski\Symfony\TabulatorBundle\Column\HiddenColumn;
 use Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage;
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringComparison;
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringItem;
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringType;
 use Adamski\Symfony\TabulatorBundle\Parser\ParserInterface;
 use Adamski\Symfony\TabulatorBundle\Sorter\SortingDirection;
 use Adamski\Symfony\TabulatorBundle\Sorter\SortingItem;
@@ -20,7 +22,7 @@ class Tabulator {
 
     public function __construct(
         private string                   $selector,
-        private readonly Request         $request,
+        private readonly ?Request        $request,
         private readonly InstanceStorage $instanceStorage,
         private readonly ParserInterface $parser,
     ) {}
@@ -111,7 +113,7 @@ class Tabulator {
     public function getConfig(): array {
         $tableOptions = $this->getOptions();
 
-        if (!array_key_exists("ajaxURL", $tableOptions) || null === $tableOptions["ajaxURL"]) {
+        if (!array_key_exists("ajaxURL", $tableOptions) || empty($tableOptions["ajaxURL"])) {
             throw new \InvalidArgumentException("The ajaxURL option must be set");
         }
 
@@ -157,6 +159,31 @@ class Tabulator {
                             ->setColumn($this->getColumn($value["field"]))
                             ->setDirection(SortingDirection::from($value["dir"]))
                     );
+                }
+            }
+
+            // Process filtering
+            $requestFilter = !empty($request->query->all("filter")) ? $request->query->all("filter") : $request->getPayload()->all("filter");
+
+            if (count($requestFilter) > 0) {
+                foreach ($requestFilter as $value) {
+                    if (isset($value["value"])) {
+                        $adapterQuery->getFilteringBag()->addFilter(
+                            (new FilteringItem())
+                                ->setColumn($this->getColumn($value["field"]))
+                                ->setType(FilteringType::from($value["type"]))
+                                ->setValue($value["value"]), FilteringComparison::AND
+                        );
+                    } else {
+                        foreach ($value as $item) {
+                            $adapterQuery->getFilteringBag()->addFilter(
+                                (new FilteringItem())
+                                    ->setColumn($this->getColumn($item["field"]))
+                                    ->setType(FilteringType::from($item["type"]))
+                                    ->setValue($item["value"]), FilteringComparison::OR
+                            );
+                        }
+                    }
                 }
             }
 

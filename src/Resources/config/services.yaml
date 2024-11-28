@@ -2,16 +2,25 @@ services:
 
     # Adapters
     Adamski\Symfony\TabulatorBundle\Adapter\ArrayAdapter:
+        tags: [ 'tabulator.adapter' ]
     Adamski\Symfony\TabulatorBundle\Adapter\CallableAdapter:
+        tags: [ 'tabulator.adapter' ]
     Adamski\Symfony\TabulatorBundle\Adapter\Doctrine\RepositoryAdapter:
         arguments:
             - '@doctrine'
+        tags: [ 'tabulator.adapter' ]
 
     # Columns
     Adamski\Symfony\TabulatorBundle\Column\TwigColumn:
         arguments:
             - '@twig'
+        tags: [ 'tabulator.column' ]
 
+    # Twig Extensions
+    Adamski\Symfony\TabulatorBundle\Twig\TabulatorExtension:
+        tags: [ 'twig.extension' ]
+
+    # Other
     Adamski\Symfony\TabulatorBundle\DependencyInjection\InstanceStorage:
     Adamski\Symfony\TabulatorBundle\Parser\PropertyParser:
     Adamski\Symfony\TabulatorBundle\TabulatorFactory:

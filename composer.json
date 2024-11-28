@@ -13,11 +13,13 @@
         "php": ">=8.2",
         "symfony/framework-bundle": "^7.1",
         "symfony/options-resolver": "^7.1",
-        "symfony/property-access": "^7.1",
-        "symfony/twig-bundle": "^7.1"
+        "symfony/property-access": "^7.1"
     },
     "require-dev": {
+        "doctrine/doctrine-bundle": "^2.13",
+        "doctrine/orm": "^3.3",
         "symfony/test-pack": "^1.1",
+        "symfony/twig-bundle": "^7.1",
         "symfony/var-dumper": "^7.1"
     },
     "config": {
@@ -32,5 +34,10 @@
         "psr-4": {
             "Adamski\\Symfony\\TabulatorBundleTests\\": "tests/"
         }
+    },
+    "suggest": {
+        "doctrine/doctrine-bundle": "For integrated access to Doctrine object managers",
+        "doctrine/orm": "For full automated integration with Doctrine entities",
+        "symfony/twig-bundle": "To use default Twig based rendering and TwigColumn"
     }
 }

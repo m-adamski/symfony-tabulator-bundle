@@ -5,6 +5,8 @@ namespace Adamski\Symfony\TabulatorBundle\Adapter\Doctrine;
 use Adamski\Symfony\TabulatorBundle\Adapter\AbstractAdapter;
 use Adamski\Symfony\TabulatorBundle\AdapterQuery;
 use Adamski\Symfony\TabulatorBundle\ArrayResult;
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringComparison;
+use Adamski\Symfony\TabulatorBundle\Filter\FilteringType;
 use Adamski\Symfony\TabulatorBundle\ResultInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -16,7 +18,7 @@ class RepositoryAdapter extends AbstractAdapter {
 
     public function __construct(?ManagerRegistry $managerRegistry = null) {
         if (null === $managerRegistry) {
-            throw new \InvalidArgumentException("Install doctrine/doctrine-bundle to use the ORMAdapter");
+            throw new \InvalidArgumentException("Install doctrine/doctrine-bundle to use the RepositoryAdapter");
         }
 
         $this->managerRegistry = $managerRegistry;
@@ -39,13 +41,41 @@ class RepositoryAdapter extends AbstractAdapter {
             throw new \InvalidArgumentException("The function must return an instance of QueryBuilder");
         }
 
+        // Process filtering
+        if ($adapterQuery->getFilteringBag()->hasFiltering()) {
+            $andExpression = $queryBuilder->expr()->andX();
+            $orExpression = $queryBuilder->expr()->orX();
+
+            foreach ($adapterQuery->getFilteringBag()->getFilters() as $comparison => $filterItems) {
+                foreach ($filterItems as $filterItem) {
+                    $queryExpression = $this->getQueryExpression($filterItem->getType());
+                    $queryFieldName = sprintf("%s.%s", $rootAlias, $filterItem->getColumn()->getOption("field"));
+                    $queryFilterParameter = uniqid("_param_");
+
+                    if (null === $queryExpression) {
+                        throw new \InvalidArgumentException("Provided filtering type is not supported by the RepositoryAdapter");
+                    }
+
+                    // Add Query with Expression (value as parameter with generated random name)
+                    ${$comparison === FilteringComparison::OR->value ? "orExpression" : "andExpression"}->add(
+                        $queryBuilder->expr()->{$queryExpression}($queryFieldName, sprintf(":%s", $queryFilterParameter))
+                    );
+
+                    $queryBuilder->setParameter($queryFilterParameter, $this->prepareQueryParameter($filterItem->getType(), $filterItem->getValue()));
+                }
+            }
+
+            // Add generated Expression Queries
+            // https://tabulator.info/docs/6.3/filter#func-complex
+            $queryBuilder->andWhere($andExpression)->andWhere($orExpression);
+        }
+
         // Process sorting
         if ($adapterQuery->getSortingBag()->hasSorting()) {
             foreach ($adapterQuery->getSortingBag()->getSortingItems() as $sortingItem) {
-                $queryBuilder->addOrderBy(
-                    $rootAlias . "." . $sortingItem->getColumn()->getOption("field"),
-                    $sortingItem->getDirection()->value
-                );
+                $queryFieldName = sprintf("%s.%s", $rootAlias, $sortingItem->getColumn()->getOption("field"));
+
+                $queryBuilder->addOrderBy($queryFieldName, $sortingItem->getDirection()->value);
             }
         }
 
@@ -68,5 +98,38 @@ class RepositoryAdapter extends AbstractAdapter {
         $resolver->setRequired(["entity", "query_builder"])
             ->setAllowedTypes("entity", "string")
             ->setAllowedTypes("query_builder", "callable");
+    }
+
+    /**
+     * Parse FilteringType to QueryBuilder expression.
+     *
+     * @param FilteringType $type
+     * @return string|null
+     */
+    private function getQueryExpression(FilteringType $type): ?string {
+        return match ($type) {
+            FilteringType::EQUAL            => "eq",
+            FilteringType::NOT_EQUAL        => "neq",
+            FilteringType::LIKE             => "like",
+            FilteringType::LESS             => "lt",
+            FilteringType::LESS_OR_EQUAL    => "lte",
+            FilteringType::GREATER          => "gt",
+            FilteringType::GREATER_OR_EQUAL => "gte",
+            default                         => null
+        };
+    }
+
+    /**
+     * Prepare value for Query Parameter.
+     *
+     * @param FilteringType $type
+     * @param mixed         $value
+     * @return mixed
+     */
+    private function prepareQueryParameter(FilteringType $type, mixed $value): mixed {
+        return match ($type) {
+            FilteringType::LIKE => sprintf("%%%s%%", $value),
+            default             => $value
+        };
     }
 }

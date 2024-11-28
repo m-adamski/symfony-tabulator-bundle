@@ -2,7 +2,6 @@
 
 namespace Adamski\Symfony\TabulatorBundle\Parser;
 
-use Adamski\Symfony\TabulatorBundle\Column\AbstractColumn;
 use Adamski\Symfony\TabulatorBundle\Column\TwigColumn;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 

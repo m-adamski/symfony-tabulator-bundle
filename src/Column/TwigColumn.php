@@ -16,7 +16,7 @@ class TwigColumn extends AbstractColumn {
         $this->environment = $environment;
     }
 
-    public function prepareContent($value): mixed {
+    public function prepareContent($value): string {
         return $this->environment->render($this->getOption("template"), [
             "content" => $value
         ]);
