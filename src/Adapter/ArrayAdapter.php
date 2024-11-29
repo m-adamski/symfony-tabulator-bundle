@@ -18,7 +18,7 @@ class ArrayAdapter extends AbstractAdapter {
         if ($adapterQuery->getFilteringBag()->hasFiltering()) {
             $adapterData = array_filter($adapterData, function (array $item) use ($adapterQuery) {
                 $filterAndResult = true;
-                $filterOrResult = false;
+                $filterOrResult = count($adapterQuery->getFilteringBag()->getFilters(FilteringComparison::OR)) <= 0;
 
                 foreach ($adapterQuery->getFilteringBag()->getFilters(FilteringComparison::AND) as $filterItem) {
                     if ($filterItem->getType() === FilteringType::EQUAL) {

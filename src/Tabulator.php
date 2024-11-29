@@ -168,17 +168,31 @@ class Tabulator {
             if (count($requestFilter) > 0) {
                 foreach ($requestFilter as $value) {
                     if (isset($value["value"])) {
+                        $filterColumn = $this->getColumn($value["field"]);
+                        $filterColumnName = $filterColumn->getOption("field");
+
+                        if (false === $filterColumn->getOption("filterable")) {
+                            throw new \InvalidArgumentException("Filtering by the '$filterColumnName' column is disabled");
+                        }
+
                         $adapterQuery->getFilteringBag()->addFilter(
                             (new FilteringItem())
-                                ->setColumn($this->getColumn($value["field"]))
+                                ->setColumn($filterColumn)
                                 ->setType(FilteringType::from($value["type"]))
                                 ->setValue($value["value"]), FilteringComparison::AND
                         );
                     } else {
                         foreach ($value as $item) {
+                            $filterColumn = $this->getColumn($item["field"]);
+                            $filterColumnName = $filterColumn->getOption("field");
+
+                            if (false === $filterColumn->getOption("filterable")) {
+                                throw new \InvalidArgumentException("Filtering by the '$filterColumnName' column is disabled");
+                            }
+
                             $adapterQuery->getFilteringBag()->addFilter(
                                 (new FilteringItem())
-                                    ->setColumn($this->getColumn($item["field"]))
+                                    ->setColumn($filterColumn)
                                     ->setType(FilteringType::from($item["type"]))
                                     ->setValue($item["value"]), FilteringComparison::OR
                             );

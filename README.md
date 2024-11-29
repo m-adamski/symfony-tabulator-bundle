@@ -77,9 +77,10 @@ class ClientController extends AbstractController {
 The next step is to prepare the JS file in which we will initialize the Tabulator.
 In the example below we use the functionality from
 the [AssetMapper](https://symfony.com/doc/current/frontend/asset_mapper.html) component, but it should work fine without
-it e.g. importing Tabulator from CDN (ignore first import from the code below).
+it e.g. importing Tabulator from CDN (ignore first two imports from the code below).
 
 ```javascript
+import "tabulator-tables/dist/css/tabulator.min.css";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import { readAttribute } from "./functions/read-attribute.js";
 import { initTabulator } from "../../vendor/m-adamski/symfony-tabulator-bundle/src/Resources/public/js/tabulator.js";
