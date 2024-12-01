@@ -138,9 +138,9 @@ To prepare the configuration we will use ``tabulator_config`` Twig Extension.
 Each available column has four basic options:
 
 * title (string) - Title of the column
-* visible (boolean) - Decide whether the column will be visible or not
-* filterable (boolean) - Decides whether filtering by this column will be possible
-* extra (array) - [Tabulator Column Definition](https://tabulator.info/docs/6.3/columns#definition) (all options given
+* visible (boolean) (true) - Decide whether the column will be visible or not
+* filterable (boolean) (true) - Decides whether filtering by this column will be possible
+* extra (array) ([]) - [Tabulator Column Definition](https://tabulator.info/docs/6.3/columns#definition) (all options given
   here will be passed to the JS script)
 
 ### TextColumn
@@ -155,7 +155,7 @@ Additional options:
 
 * format (string) - Date format e.g. Y-m-d H:i:s
 
-### TickCrossColumn - [Documentation](https://tabulator.info/docs/6.3/format#formatter-tickcross)
+### TickCrossColumn
 
 A column that can display different content for different values of a boolean variable.
 It will create column with [TickCross Formatter](https://tabulator.info/docs/6.3/format#formatter-tickcross).
