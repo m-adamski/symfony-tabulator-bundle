@@ -71,7 +71,7 @@ class ClientController extends AbstractController {
         }
 
         return $this->render("modules/Client/index.html.twig", [
-            "table"   => $clientTable->getConfig(),
+            "table" => $clientTable
         ]);
     }
 }
@@ -137,48 +137,77 @@ To prepare the configuration we will use ``tabulator_config`` Twig Extension.
 
 Each available column has four basic options:
 
-* title (string) - Title of the column
-* visible (boolean) (true) - Decide whether the column will be visible or not
-* filterable (boolean) (true) - Decides whether filtering by this column will be possible
-* extra (array) ([]) - [Tabulator Column Definition](https://tabulator.info/docs/6.3/columns#definition) (all options given
-  here will be passed to the JS script)
+| Name       | Type    | Default Value | Description                                                                                                                                |
+|------------|---------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| title      | string  | -             | Title of the column                                                                                                                        |
+| visible    | boolean | true          | Decide whether the column will be visible or not                                                                                           |
+| filterable | boolean | true          | Decides whether filtering by this column will be possible                                                                                  |
+| extra      | array   | []            | [Tabulator Column Definition](https://tabulator.info/docs/6.3/columns#definition) (all options given here will be passed to the JS script) |
 
 ### TextColumn
 
 The basic column that is used to display values.
+
 No additional options available.
+
+### CallableColumn
+
+A custom function is called to obtain the value to be displayed.
+
+Additional options:
+
+| Name      | Type          | Default Value | Description                                                              |
+|-----------|---------------|---------------|--------------------------------------------------------------------------|
+| callable  | callable      | -             | The function that will be called - the row will be passed as a parameter |
 
 ### DateTimeColumn
 
 Column that will display DateTime in a defined format.
+
 Additional options:
 
-* format (string) - Date format e.g. Y-m-d H:i:s
+| Name   | Type   | Default Value | Description                  |
+|--------|--------|---------------|------------------------------|
+| format | string | -             | Date format e.g. Y-m-d H:i:s |
+
+### PropertyColumn
+
+The value to display will be taken from the specified property of the row object.
+This column uses the PropertyAccess Component.
+
+Additional options:
+
+| Name      | Type          | Default Value | Description                                                                                                                                                                   |
+|-----------|---------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| property  | string        | -             | Property of the object from which the value to be displayed will be obtained. [The PropertyAccess Component](https://symfony.com/doc/current/components/property_access.html) |
+| nullValue | string / null | null          | The value that will be passed if the value of the property is null                                                                                                            |
+
 
 ### TickCrossColumn
 
 A column that can display different content for different values of a boolean variable.
 It will create column with [TickCross Formatter](https://tabulator.info/docs/6.3/format#formatter-tickcross).
+
 Additional options:
 
-* tickElement (string) - Custom HTML for the tick element, if set to false the tick element will not be shown (it will
-  only show crosses)
-* crossElement (string) - Custom HTML for the cross element, if set to false the cross element will not be shown (it
-  will only show ticks)
-* allowEmpty (boolean) (false)- Set to true to allow any truthy value to show a tick (default false)
-* allowTruthy (boolean) (false) - Set to true to cause empty values (undefined, null, "") to display an empty cell
-  instead of a
-  cross (default false)
+| Name         | Type    | Default Value | Description                                                                                                      |
+|--------------|---------|---------------|------------------------------------------------------------------------------------------------------------------|
+| tickElement  | string  | -             | Custom HTML for the tick element, if set to false the tick element will not be shown (it will only show crosses) |
+| crossElement | string  | -             | Custom HTML for the cross element, if set to false the cross element will not be shown (it will only show ticks) |
+| allowEmpty   | boolean | false         | Set to true to allow any truthy value to show a tick                                                             |
+| allowTruthy  | boolean | false         | Set to true to cause empty values (undefined, null, "") to display an empty cell instead of a cross              |
 
 ### TwigColumn
 
 The column will be rendered based on the provided Twig template.
 It will create column with [HTML Formatter](https://tabulator.info/docs/6.3/format#formatter-html).
+
 Additional options:
 
-* template (string) - Twig template
-* passRow (boolean) (false) - Decides whether to pass only the value from the defined column or the entire row/object to
-  the given Twig template.
+| Name     | Type    | Default Value | Description                                                                                                        |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------------|
+| template | string  | -             | Path to the Twig template file                                                                                     |
+| passRow  | boolean | false         | Decides whether to pass only the value from the defined column or the entire row/object to the given Twig template |
 
 ## License
 

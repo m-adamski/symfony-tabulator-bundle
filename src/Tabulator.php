@@ -212,7 +212,7 @@ class Tabulator {
                     "data"      => $adapterData,
                     "last_row"  => $adapterResult->getTotalRecords(),
                     "last_page" => $adapterResult->getTotalPages()
-                ] : $adapterResult->getData()
+                ] : $adapterData
             );
         }
 

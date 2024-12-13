@@ -2,6 +2,7 @@
 
 namespace Adamski\Symfony\TabulatorBundle\Twig;
 
+use Adamski\Symfony\TabulatorBundle\Tabulator;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
@@ -12,7 +13,7 @@ class TabulatorExtension extends AbstractExtension {
         ];
     }
 
-    public function config(array $config): string {
-        return json_encode($config, JSON_THROW_ON_ERROR);
+    public function config(Tabulator $tabulator): string {
+        return json_encode($tabulator->getConfig(), JSON_THROW_ON_ERROR);
     }
 }
