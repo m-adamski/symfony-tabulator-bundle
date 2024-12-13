@@ -86,7 +86,7 @@ class Tabulator {
         }
 
         $this->columns[$name] = $this->instanceStorage->getColumn($columnClass)
-            ->setOptions(array_merge($options, ["field" => $name]));
+            ->setOptions(array_merge(["field" => $name], $options));
 
         return $this;
     }
