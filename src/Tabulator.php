@@ -239,7 +239,8 @@ class Tabulator {
             "paginationSizeSelector" => [10, 25, 50],
             "paginationCounter"      => "rows",
             "filterMode"             => "remote",
-            "sortMode"               => "remote"
-        ]);
+            "sortMode"               => "remote",
+            "placeholder"            => false,
+        ])->setIgnoreUndefined();
     }
 }
