@@ -30,7 +30,7 @@ abstract class AbstractColumn {
 
     public function getConfig(): array {
         return array_merge_recursive([
-            "title"   => $this->getOption("title"),
+            "title"   => $this->getOption("title") ?? "",
             "field"   => $this->getOption("field"),
             "visible" => $this->getOption("visible"),
         ], $this->getDefaultConfig(), $this->getOption("extra"));
@@ -48,7 +48,7 @@ abstract class AbstractColumn {
                 "filterable" => true,
                 "extra"      => []
             ])
-            ->setAllowedTypes("title", "string")
+            ->setAllowedTypes("title", ["string", "null", "bool"])
             ->setAllowedTypes("field", "string")
             ->setAllowedTypes("visible", "bool")
             ->setAllowedTypes("filterable", "bool")

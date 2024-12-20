@@ -48,20 +48,25 @@ class RepositoryAdapter extends AbstractAdapter {
 
             foreach ($adapterQuery->getFilteringBag()->getFilters() as $comparison => $filterItems) {
                 foreach ($filterItems as $filterItem) {
-                    $queryExpression = $this->getQueryExpression($filterItem->getType());
-                    $queryFieldName = sprintf("%s.%s", $rootAlias, $filterItem->getColumn()->getOption("field"));
-                    $queryFilterParameter = uniqid("_param_");
+                    $filterValue = $filterItem->getValue();
+                    $filterType = $filterItem->getType();
 
-                    if (null === $queryExpression) {
-                        throw new \InvalidArgumentException("Provided filtering type is not supported by the RepositoryAdapter");
+                    if (!empty($filterValue)) {
+                        $queryExpression = $this->getQueryExpression($filterType);
+                        $queryFieldName = sprintf("%s.%s", $rootAlias, $filterItem->getColumn()->getOption("field"));
+                        $queryFilterParameter = uniqid("_param_");
+
+                        if (null === $queryExpression) {
+                            throw new \InvalidArgumentException("Provided filtering type is not supported by the RepositoryAdapter");
+                        }
+
+                        // Add Query with Expression (value as parameter with generated random name)
+                        ${$comparison === FilteringComparison::OR->value ? "orExpression" : "andExpression"}->add(
+                            $queryBuilder->expr()->{$queryExpression}($queryFieldName, sprintf(":%s", $queryFilterParameter))
+                        );
+
+                        $queryBuilder->setParameter($queryFilterParameter, $this->prepareQueryParameter($filterType, $filterValue));
                     }
-
-                    // Add Query with Expression (value as parameter with generated random name)
-                    ${$comparison === FilteringComparison::OR->value ? "orExpression" : "andExpression"}->add(
-                        $queryBuilder->expr()->{$queryExpression}($queryFieldName, sprintf(":%s", $queryFilterParameter))
-                    );
-
-                    $queryBuilder->setParameter($queryFilterParameter, $this->prepareQueryParameter($filterItem->getType(), $filterItem->getValue()));
                 }
             }
 

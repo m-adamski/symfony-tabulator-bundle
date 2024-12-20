@@ -8,8 +8,8 @@ class FilteringBag {
         FilteringComparison::OR->value  => []
     ];
 
-    public function addFilter($filter, FilteringComparison $comparison): void {
-        $this->filters[$comparison->value][] = $filter;
+    public function addFilter(FilteringItem $item, FilteringComparison $comparison): void {
+        $this->filters[$comparison->value][] = $item;
     }
 
     /**

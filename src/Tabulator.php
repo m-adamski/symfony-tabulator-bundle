@@ -226,21 +226,40 @@ class Tabulator {
      * @return void
      */
     private function configureOptions(OptionsResolver $resolver): void {
-        $resolver->setDefaults([
-            "ajaxURL"                => $this->request?->getRequestUri(),
-            "ajaxConfig"             => Request::METHOD_POST,
-            "ajaxContentType"        => "json",
-            "ajaxParams"             => ["generator" => "tabulator"],
-            "layout"                 => "fitColumns",
-            "pagination"             => true,
-            "paginationMode"         => "remote",
-            "paginationSize"         => 25,
-            "paginationButtonCount"  => 3,
-            "paginationSizeSelector" => [10, 25, 50],
-            "paginationCounter"      => "rows",
-            "filterMode"             => "remote",
-            "sortMode"               => "remote",
-            "placeholder"            => false,
-        ])->setIgnoreUndefined();
+        $resolver
+            ->setDefaults([
+                "ajaxURL"                => $this->request?->getRequestUri(),
+                "ajaxConfig"             => Request::METHOD_POST,
+                "ajaxContentType"        => "json",
+                "ajaxParams"             => ["generator" => "tabulator"],
+                "layout"                 => "fitColumns",
+                "pagination"             => true,
+                "paginationMode"         => "remote",
+                "paginationSize"         => 25,
+                "paginationButtonCount"  => 3,
+                "paginationSizeSelector" => [10, 25, 50],
+                "paginationCounter"      => "rows",
+                "filterMode"             => "remote",
+                "initialFilter"          => [],
+                "sortMode"               => "remote",
+                "initialSort"            => [],
+                "placeholder"            => false,
+            ])
+            ->setAllowedTypes("ajaxURL", ["string", "null"])
+            ->setAllowedTypes("ajaxConfig", "string")
+            ->setAllowedTypes("ajaxContentType", "string")
+            ->setAllowedTypes("ajaxParams", "array")
+            ->setAllowedTypes("layout", "string")
+            ->setAllowedTypes("pagination", "bool")
+            ->setAllowedTypes("paginationMode", "string")
+            ->setAllowedTypes("paginationSize", "int")
+            ->setAllowedTypes("paginationButtonCount", "int")
+            ->setAllowedTypes("paginationSizeSelector", "array")
+            ->setAllowedTypes("paginationCounter", "string")
+            ->setAllowedTypes("filterMode", "string")
+            ->setAllowedTypes("initialFilter", "array")
+            ->setAllowedTypes("sortMode", "string")
+            ->setAllowedTypes("initialSort", "array")
+            ->setAllowedTypes("placeholder", ["string", "bool"]);
     }
 }
